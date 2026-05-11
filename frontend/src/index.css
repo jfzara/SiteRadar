@@ -98,3 +98,21 @@ h1 { margin: 0 0 8px; }
 
 .findings { margin: 0; padding-left: 18px; }
 .findings li { margin-bottom: 8px; }
+
+
+
+.copy-button {
+  margin-top: 14px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #4f46e5;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.copy-button:hover {
+  background: #4338ca;
+}

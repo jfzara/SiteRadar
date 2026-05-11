@@ -9,17 +9,41 @@ function ResultRow({ label, value }) {
   );
 }
 
+function generateEmail(data) {
+  const domain = new URL(data.url).hostname;
+  const realFindings = data.findings.filter(
+    (f) => !f.toLowerCase().includes("correct")
+  );
+
+  const bulletList = realFindings.map((f) => `• ${f}`).join("\n");
+
+  return `Bonjour,
+
+J'ai analysé rapidement votre site (${domain}) et j'ai noté quelques points qui peuvent vous faire perdre des clients potentiels :
+
+${bulletList}
+
+Sur 100, le site obtient un score de ${data.score}/100. Je peux corriger ces points rapidement pour améliorer votre conversion et votre visibilité.
+
+Si ça vous intéresse, je peux vous envoyer une proposition détaillée.
+
+Cordialement,
+Jeff`;
+}
+
 export default function App() {
   const [url, setUrl] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   async function handleAudit(e) {
     e.preventDefault();
     setLoading(true);
     setError("");
     setData(null);
+    setCopied(false);
 
     try {
       const res = await fetch("http://localhost:3001/audit", {
@@ -35,6 +59,18 @@ export default function App() {
       setError(err.message || "Erreur inconnue");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleCopyEmail() {
+    if (!data) return;
+    const email = generateEmail(data);
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (err) {
+      setError("Impossible de copier dans le presse-papier");
     }
   }
 
@@ -65,6 +101,13 @@ export default function App() {
             <div className="score-box">
               <div className="score-label">Score</div>
               <div className="score-value">{data.score}/100</div>
+              <button
+                type="button"
+                className="copy-button"
+                onClick={handleCopyEmail}
+              >
+                {copied ? "✓ Copié !" : "📋 Copier rapport email"}
+              </button>
             </div>
 
             <div className="section">
@@ -80,6 +123,7 @@ export default function App() {
               <ResultRow label="Title" value={data.hasTitle ? "Oui" : "Non"} />
               <ResultRow label="Meta description" value={data.hasMetaDescription ? "Oui" : "Non"} />
               <ResultRow label="H1" value={data.hasH1 ? "Oui" : "Non"} />
+              <ResultRow label="Viewport mobile" value={data.hasViewport ? "Oui" : "Non"} />
             </div>
 
             <div className="section">
@@ -88,6 +132,8 @@ export default function App() {
               <ResultRow label="Lien téléphone" value={data.hasPhoneLink ? "Oui" : "Non"} />
               <ResultRow label="Lien email" value={data.hasEmailLink ? "Oui" : "Non"} />
               <ResultRow label="Formulaire" value={data.hasForm ? "Oui" : "Non"} />
+              <ResultRow label="Google Maps" value={data.hasGoogleMaps ? "Oui" : "Non"} />
+              <ResultRow label="Réseaux sociaux" value={data.hasSocialLinks ? "Oui" : "Non"} />
             </div>
 
             <div className="section">
@@ -95,6 +141,7 @@ export default function App() {
               <ResultRow label="Title texte" value={data.title || "Aucun"} />
               <ResultRow label="H1 texte" value={data.h1 || "Aucun"} />
               <ResultRow label="Meta description texte" value={data.metaDescription || "Aucune"} />
+              <ResultRow label="Favicon" value={data.hasFavicon ? "Oui" : "Non"} />
             </div>
 
             <div className="section">
